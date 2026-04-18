@@ -1,92 +1,137 @@
+<div align="center">
+
 # AnnouncementGUI
 
-AnnouncementGUI is a Paper plugin for managing scheduled announcements through an in-game inventory GUI.
+**Modern inventory-based announcement management for Paper networks**
 
-It supports:
+Create, style, schedule, and sync announcement panels across single-server or multi-server Minecraft environments.
 
-- create, edit, and delete announcements in GUI
-- scheduled automatic broadcasts
-- panel-style announcement layout with title, description, and message body
-- mixed color formatting in one line
-- `LOCAL`, `SERVER`, `SERVERS`, `GROUP`, and `GLOBAL` targets
-- multi-server event sync through Redis
+<p>
+  <img alt="Java 21" src="https://img.shields.io/badge/Java-21-ff6b35?style=for-the-badge&logo=openjdk&logoColor=white">
+  <img alt="Paper 1.21.x" src="https://img.shields.io/badge/Paper-1.21.x-2f855a?style=for-the-badge&logo=paper&logoColor=white">
+  <img alt="Redis Sync" src="https://img.shields.io/badge/Redis-Cross--Server-d82c20?style=for-the-badge&logo=redis&logoColor=white">
+  <img alt="License Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-1f2937?style=for-the-badge">
+</p>
 
-## Features
+</div>
 
-- Main GUI for announcement management
-- Create/Edit/Delete announcement workflow
-- Chat-based input prompts for announcement fields
-- Structured announcement format:
-  - internal name
-  - title
-  - description lines
-  - message body lines
-  - interval
-  - target scope
-  - enabled/disabled state
-- Panel renderer for announcement output
-- Support for legacy color codes like `&a`, `&b`, `&6`
-- Support for hex color codes like `&#55FFFF`
-- Optional `<center>...</center>` support for body lines
-- Redis Pub/Sub sync for cross-server create/update/delete/broadcast events
+---
 
-## Current Storage Model
+## Overview
 
-The current implementation uses:
+AnnouncementGUI is a Paper plugin that replaces flat chat broadcasts with structured announcement panels managed through an in-game GUI.
 
-- local YAML file storage for announcement data
-- Redis only for cross-server event sync
+It is designed for:
 
-That means:
+- server owners who want GUI-based announcement management
+- networks that need `LOCAL`, `SERVER`, `GROUP`, or `GLOBAL` targeting
+- communities that want cleaner presentation than classic `prefix + message` chat output
+- multi-server setups that need cross-server sync through Redis
 
-- the source of truth is still `announcements.yml`
-- Redis is not used as the main database
-- if a server is offline during a sync event, it may miss updates
+## Why AnnouncementGUI
 
-For production-grade multi-server persistence, the next recommended step is MySQL or MariaDB.
+| Capability | Included |
+| --- | --- |
+| In-game CRUD GUI | Yes |
+| Scheduled broadcasting | Yes |
+| Styled panel output | Yes |
+| Title + description + body layout | Yes |
+| Mixed legacy colors | Yes |
+| Hex color support | Yes |
+| Multi-server sync via Redis | Yes |
+| Shared SQL storage | Not yet |
 
-## Requirements
+## Highlights
 
-- Java 21
-- Paper 1.21.x
-- Maven 3.9+
-- Redis if you want cross-server sync
+- **Panel-style output** with top border, centered title, centered description, and body section
+- **Targeted broadcasting** for single server, selected servers, server groups, or entire network
+- **GUI management flow** for create, edit, and delete actions
+- **Structured announcement schema** with internal name, title, description, body, interval, targets, and enabled state
+- **Cross-server event sync** through Redis Pub/Sub
+- **Customizable format rules** through config
 
-## Build
+## Visual Style
 
-```bash
-mvn clean package
-```
-
-Or on Windows:
-
-```bat
-build.bat
-```
-
-Output jar:
+AnnouncementGUI is built around a cleaner broadcast layout:
 
 ```text
-target/announcementgui-1.0.jar
+------------------------------------------------
+                Welcome! Adarshh
+               in example network
+------------------------------------------------
+Website: www.example.com
+Discord: discord.example.com
+Store: store.example.com
+------------------------------------------------
 ```
 
-## Installation
+Alternative spacing style:
 
-1. Build the plugin jar.
-2. Put the jar into your Paper server `plugins` folder.
-3. Start the server once.
-4. Edit the generated config.
-5. Restart the server or run `/announcement reload`.
+```text
+------------------------------------------------
+                Announcement
+        Default network announcement
 
-## Configuration
+To put text in center use <center>YOURTEXT</center>
+------------------------------------------------
+```
 
-Main config file:
+## Architecture
+
+```mermaid
+flowchart LR
+    A["Admin / Staff"] --> B["Inventory GUI"]
+    B --> C["Announcement Service"]
+    C --> D["YAML Storage"]
+    C --> E["Scheduler"]
+    C --> F["Redis Sync"]
+    F --> G["Other Paper Servers"]
+    E --> H["Broadcast Renderer"]
+    H --> I["Players Online"]
+```
+
+## Core Features
+
+### GUI management
+
+- Main menu for announcement management
+- Create, edit, and delete announcement flows
+- Chat-driven field input prompts
+- Toggle active state without restarting the server
+
+### Broadcast formatting
+
+- Top border
+- Centered title
+- Centered description lines
+- Divider or blank spacing before the message body
+- Left-aligned body by default
+- Optional `<center>...</center>` per body line
+
+### Network-aware targeting
+
+- `LOCAL`
+- `SERVER`
+- `SERVERS`
+- `GROUP`
+- `GLOBAL`
+
+### Cross-server sync
+
+- Create sync
+- Update sync
+- Delete sync
+- Force-broadcast sync
+
+## Configuration Model
+
+Main config:
 
 ```text
 plugins/AnnouncementGUI/config.yml
 ```
 
-### Example
+### Example config
 
 ```yml
 server:
@@ -118,7 +163,7 @@ formats:
 
 ### `server.id`
 
-`server.id` is the unique ID for one Paper server instance.
+`server.id` is the unique identifier for **one Paper server instance**.
 
 It is **not** a Minecraft world name.
 
@@ -131,7 +176,7 @@ Examples:
 
 ### `server.groups`
 
-`groups` are server categories.
+`groups` are logical **server categories**.
 
 They are **not** world names.
 
@@ -142,18 +187,18 @@ Examples:
 - `minigame`
 - `economy`
 
-## Multi-Server and Cross-Server Setup
+## Multi-Server Setup
 
-To use cross-server sync:
+To enable cross-server sync:
 
-1. Give every server a different `server.id`
-2. Point all servers to the same Redis instance
+1. Give every server a unique `server.id`
+2. Point every server to the same Redis instance
 3. Use the same Redis `channel`
 4. Set `sync.enabled: true`
 
 ### Example
 
-Server A:
+**Lobby server**
 
 ```yml
 server:
@@ -162,7 +207,7 @@ server:
     - "lobby"
 ```
 
-Server B:
+**Survival server**
 
 ```yml
 server:
@@ -171,7 +216,7 @@ server:
     - "survival"
 ```
 
-Shared Redis config on both:
+**Shared Redis config**
 
 ```yml
 sync:
@@ -182,112 +227,110 @@ sync:
     channel: "announcementgui:sync"
 ```
 
-## Announcement Format
+## Color and Formatting Support
 
-Announcements are rendered like a panel:
+Supported color formats:
+
+- legacy color codes like `&a`, `&b`, `&6`, `&c`
+- style codes like `&l`, `&m`, `&n`, `&o`
+- hex color codes like `&#55FFFF`
+
+Example:
 
 ```text
-------------------------------------------------
-centered title
-centered description
-------------------------------------------------
-message body
-------------------------------------------------
+Title: &bWelcome! &6Adarshh
+Description: &cin example network
+Body: Website: &#55FFFFwww.example.com|Discord: &ediscord.example.com|Store: &astore.example.com
 ```
 
-Alternative style:
+Body line centering:
 
 ```text
-------------------------------------------------
-centered title
-centered description
-
-Website:
-Discord:
-Store:
-------------------------------------------------
-```
-
-To switch spacing between header and body:
-
-- `DIVIDER` = line separator
-- `BLANK` = empty line
-- `NONE` = no separator
-
-## Color Support
-
-Supported formats:
-
-- legacy colors: `&a`, `&b`, `&6`, `&c`
-- styles: `&l`, `&o`, `&n`, `&m`
-- hex colors: `&#55FFFF`
-
-Examples:
-
-```text
-&bWelcome! &6PlayerName
-&cin example network
-Website: &#55FFFFwww.example.com
-Discord: &ediscord.example.com
-Store: &astore.example.com
-```
-
-Body lines can also be centered manually:
-
-```text
-<center>&bCentered text</center>
+<center>&bThis line will be centered</center>
 ```
 
 ## Commands
 
-- `/announcementgui`
-- `/agui`
-- `/announcement open`
-- `/announcement reload`
-- `/announcement list`
-- `/announcement broadcast <id>`
+| Command | Description |
+| --- | --- |
+| `/announcementgui` | Open the main GUI |
+| `/agui` | Shortcut for the main GUI |
+| `/announcement open` | Open the main GUI |
+| `/announcement reload` | Reload config and plugin state |
+| `/announcement list` | Show existing announcements |
+| `/announcement broadcast <id>` | Force broadcast an announcement |
 
 ## Permissions
 
-- `announcementgui.open`
-- `announcementgui.create`
-- `announcementgui.edit`
-- `announcementgui.delete`
-- `announcementgui.reload`
-- `announcementgui.broadcast`
-- `announcementgui.admin`
+| Permission | Description |
+| --- | --- |
+| `announcementgui.open` | Open the GUI |
+| `announcementgui.create` | Create announcements |
+| `announcementgui.edit` | Edit announcements |
+| `announcementgui.delete` | Delete announcements |
+| `announcementgui.reload` | Reload the plugin |
+| `announcementgui.broadcast` | Force broadcast announcements |
+| `announcementgui.admin` | Full access |
+
+## Storage and Sync
+
+Current implementation:
+
+- **Primary storage:** local YAML file
+- **Cross-server sync:** Redis Pub/Sub events
+
+What this means:
+
+- `announcements.yml` is still the main source of data on each server
+- Redis distributes change events, not the full authoritative database layer
+- a server that is offline during a sync event may become stale
+
+For larger production networks, the recommended next step is:
+
+- **MySQL / MariaDB as shared storage**
+
+## Build
+
+Build with Maven:
+
+```bash
+mvn clean package
+```
+
+Expected output:
+
+```text
+target/announcementgui-1.0.jar
+```
 
 ## Testing Checklist
 
-- Plugin loads without errors
+- Plugin loads without startup errors
 - `/agui` opens the main menu
-- Create announcement from GUI
-- Edit announcement title/description/message
-- Delete announcement through confirm screen
-- Announcement persists after restart
-- Scheduled broadcast runs at the expected interval
-- `SERVER` and `GROUP` targeting works as expected
-- Redis sync propagates create/update/delete across servers
+- Create flow works
+- Edit flow updates saved announcements
+- Delete flow removes announcements correctly
+- Announcements persist after restart
+- Scheduler broadcasts at the configured interval
+- `SERVER` targeting works
+- `GROUP` targeting works
+- Redis sync propagates changes across servers
 
 ## Limitations
 
-- Main persistence is still YAML, not SQL
-- Redis sync is event-based, not shared-database-based
-- If a server misses sync events while offline, its local file can become stale
-- Chat input relies on the Bukkit conversation system for prompt capture
+- Shared SQL storage is not implemented yet
+- Redis sync is event-based, not database-based
+- Offline servers can miss sync updates
+- Prompt input currently relies on Bukkit conversation flow
 
-## Project Status
+## Roadmap
 
-This project currently covers the first working implementation of AnnouncementGUI:
-
-- GUI CRUD
-- local persistence
-- scheduler
-- panel formatting
-- Redis cross-server sync
-
-The next major improvement is shared SQL storage for stronger multi-server consistency.
+- Shared SQL storage for stronger consistency
+- Safer resync for servers that were offline
+- Better GUI target selector
+- Richer preview and formatting presets
+- Additional admin diagnostics
 
 ## License
 
-Apache License 2.0. See [LICENSE](D:/coding/AnnouncementGUI/github/LICENSE).
+Licensed under the Apache License 2.0. See [LICENSE](LICENSE).

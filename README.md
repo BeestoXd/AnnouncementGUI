@@ -235,12 +235,19 @@ Supported color formats:
 - style codes like `&l`, `&m`, `&n`, `&o`
 - hex color codes like `&#55FFFF`
 
+Supported placeholders:
+
+- `%player%` for the receiving player's name
+- `%uuid%` for the receiving player's UUID
+- `%server%` for the current configured server id
+- `%online%` for the current online player count
+
 Example:
 
 ```text
 Title: &bWelcome! &6Adarshh
 Description: &cin example network
-Body: Website: &#55FFFFwww.example.com|Discord: &ediscord.example.com|Store: &astore.example.com
+Body: Welcome, &#F59E0B%player%&f!|Website: &#55FFFFwww.example.com|Discord: &ediscord.example.com|Store: &astore.example.com
 ```
 
 Body line centering:

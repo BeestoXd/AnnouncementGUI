@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,17 +46,14 @@ public final class AnnouncementBroadcaster {
             return false;
         }
 
-        List<String> lines = panelFormatter.render(announcement);
-        if (lines.isEmpty()) {
-            return false;
-        }
-
+        boolean sent = false;
         for (Player player : Bukkit.getOnlinePlayers()) {
-            for (String rawLine : lines) {
+            for (String rawLine : panelFormatter.render(announcement, player)) {
                 player.sendMessage(ColorUtil.colorize(rawLine));
+                sent = true;
             }
         }
-        if (Bukkit.getOnlinePlayers().isEmpty()) {
+        if (!sent) {
             plugin.getLogger().fine("No online players for announcement " + announcement.getId());
         }
         return true;
